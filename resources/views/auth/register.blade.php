@@ -1,7 +1,5 @@
 @extends('auth.logRegisLayouts')
 
-@yield('session')
-
 @section('content')
 
 <div class="row justify-content-center mt-5">
@@ -10,14 +8,32 @@
         <div class="card">
             <div class="card-header">Register</div>
             <div class="card-body">
-                <form action="{{ route('store') }}" method="post">
+                <form action="{{ route('store') }}" method="post" enctype="multipart/form-data">
                     @csrf
+
+                    <div class="mb-3 row">
+                        <label class="font-weight-bold">Foto Profil</label>
+                        <input type="file" class="form-control" id="image_profile" name="image_profile">
+                        @if ($errors->has('image_profile'))
+                        <span class="text-danger">{{ $errors->first('image_profile') }}</span>
+                        @endif
+                    </div>
+
                     <div class="mb-3 row">
                         <label for="name" class="col-md-4 col-form-label text-md-end text-start">Name</label>
                         <div class="col-md-6">
                             <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}">
                             @if ($errors->has('name'))
                             <span class="text-danger">{{ $errors->first('name') }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="phone" class="col-md-4 col-form-label text-md-end text-start">Phone</label>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone') }}">
+                            @if ($errors->has('phone'))
+                            <span class="text-danger">{{ $errors->first('phone') }}</span>
                             @endif
                         </div>
                     </div>
