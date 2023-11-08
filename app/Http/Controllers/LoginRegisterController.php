@@ -26,7 +26,7 @@ class LoginRegisterController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except([
-            'logout', 'dashboard'
+            'logout', 'dashboard', 'dashboards', 'edit', 'update', 'delete'
         ]);
     }
 
@@ -51,30 +51,68 @@ class LoginRegisterController extends Controller
         $request->validate([
             'name' => 'required|string|max:250',
             'email' => 'required|email|max:250|unique:users',
-            'password' => 'required|min:8|confirmed'
+            'password' => 'required|min:8|confirmed',
+            'image_profile' => 'image|nullable|max:1999'
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password)
-        ]);
-        $body = "Selamat datang di website kami $request->name, silahkan login untuk melanjutkan <br>
-        email : $request->email <br>
-        password : $request->password <br>
-        Kamu dapat mereset password jika lupa di halaman login";
-        $data = [
-            'subject' => 'Selamat datang di website kami',
-            'name' => $request->name,
-            'email' => $request->email,
-            'body' => $body
-        ];
-        dispatch(new SendMailJob($data));
-        $credentials = $request->only('email', 'password');
-        Auth::attempt($credentials);
-        $request->session()->regenerate();
-        return redirect()->route('dashboard')
-            ->withSuccess('You have successfully registered & logged in!');
+        if($request->hasFile('image_profile')){
+            $image = $request->file('image_profile');
+
+            $folderPathOriginal = public_path('storage/photos/original');
+            $folderPathThumbnail = public_path('storage/photos/thumbnail');
+            $folderPathSquare = public_path('storage/photos/square');
+
+            if (!File::isDirectory($folderPathOriginal)) {
+                File::makeDirectory($folderPathOriginal, 0777, true, true);
+            }
+            if (!File::isDirectory($folderPathThumbnail)) {
+                File::makeDirectory($folderPathThumbnail, 0777, true, true);
+            }
+            if (!File::isDirectory($folderPathSquare)) {
+                File::makeDirectory($folderPathSquare, 0777, true, true);
+            }
+
+            $filenameWithExt = $request->file('image_profile')->getClientOriginalName();
+            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension = $request->file('image_profile')->getClientOriginalExtension();
+            $filenameSimpan = $filename . '_' . time() . '.' . $extension;
+
+            // Simpan gambar asli
+            $path = $request->file('image_profile')->storeAs('photos/original', $filenameSimpan);
+
+            // Buat thumbnail dengan lebar dan tinggi yang diinginkan
+            $thumbnailPath = public_path('storage/photos/thumbnail/' . $filenameSimpan);
+            Image::make($image)
+                ->fit(150, 150)
+                ->save($thumbnailPath);
+
+            // Buat versi persegi dengan lebar dan tinggi yang sama
+            $squarePath = public_path('storage/photos/square/' . $filenameSimpan);
+            Image::make($image)
+                ->fit(300, 300)
+                ->save($squarePath);
+
+            $path = $filenameSimpan;
+        }
+        else {
+            $path = null;
+        }
+
+            $userAccount = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'password' => Hash::make($request->password),
+                'image_profile' => $filenameSimpan
+            ]);
+
+            $credentials = $request->only('email', 'password');
+            Auth::attempt($credentials);
+            $request->session()->regenerate();
+            // return redirect()->route('dashboard', $userAccount->id)
+            //     ->withSuccess('You have successfully registered & logged in!');
+            return redirect()->route('dashboards')
+                ->withSuccess('You have successfully registered & logged in!');
     }
 
     /**
