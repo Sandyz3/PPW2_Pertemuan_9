@@ -4,19 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\datacvs;
-use App\Jobs\SendMailJob;
 use App\Http\Controllers\Controller;
+use App\Mail\regisConfirmation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Intervention\Image\Facades\Image;
-use Illuminate\Support\Facades\File;
-use App\Mail\regisConfirmation;
 use Illuminate\Support\Facades\Mail;
 use PhpParser\Node\Expr\Cast\String_;
 use Illuminate\Support\Facades\Storage;
-
-
+use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\File;
+use App\Http\Controllers\GalleryController;
 
 class LoginRegisterController extends Controller
 {
@@ -92,12 +90,10 @@ class LoginRegisterController extends Controller
                 ->fit(300, 300)
                 ->save($squarePath);
 
-            $path = $filenameSimpan;
         }
         else {
             $path = null;
         }
-
             $userAccount = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -131,6 +127,8 @@ class LoginRegisterController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
+
     public function authenticate(Request $request)
     {
         $credentials = $request->validate([
@@ -138,15 +136,35 @@ class LoginRegisterController extends Controller
             'password' => 'required'
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->route('dashboard')
-                ->withSuccess('You have successfully logged in!');
-        }
 
-        return back()->withErrors([
-            'email' => 'Your provided credentials do not match in our records.',
-        ])->onlyInput('email');
+        if (Auth::attempt($credentials)) {
+
+            $accounts = User::where('email', $request->email)->first();
+
+            if ($accounts) {
+                $request->session()->regenerate();
+
+                // return redirect()->route('dashboard', $accounts->id)
+                //     ->withSuccess('You have successfully logged in!');
+
+                return redirect()->route('dashboards')
+                    ->withSuccess('You have successfully logged in!');
+
+            } else {
+                return back()->withErrors([
+                    'email' => 'Your provided credentials do not match in our records.',
+                ])->onlyInput('email');
+            }
+        } else {
+            return back()->withErrors([
+                'email' => 'Your provided credentials do not match in our records.',
+            ])->onlyInput('email');
+        }
+    }
+
+    public function dashboards(){
+        $datas = User::all();
+        return view('auth.dashboard', compact('datas'));
     }
 
     /**
@@ -154,10 +172,12 @@ class LoginRegisterController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
     public function dashboard()
     {
         if (Auth::check()) {
-            return view('home2');
+            $datas = User::find()->get();
+            return view('auth.dashboard', compact('datas'));
         }
 
         return redirect()->route('login')
@@ -181,8 +201,9 @@ class LoginRegisterController extends Controller
         session_destroy();
         return redirect()->route('login')
             ->withSuccess('You have logged out successfully!');;
-
     }
+
+
     public function edit(Request $request, String $id){
 
         $accounts = User::find($id)->first();

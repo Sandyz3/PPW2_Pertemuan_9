@@ -14,6 +14,8 @@
     <title>Laravel 10 Custom User Registration & Login Tutorial - AllPHPTricks.com</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 </head>
+    <link rel="stylesheet" href="{{ asset('lightbox2-dev/dist/css/lightbox.min.css')
+}}">
 
 <body>
 
@@ -34,6 +36,10 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ (request()->is('register')) ? 'active' : '' }}" href="{{ route('public.index') }}">Login as Public</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ (request()->is('gallery')) ? 'active' : '' }}" href="{{
+                       route('gallery.index') }}">Gallery</a>
                     </li>
                     @else
                     <li class="nav-item dropdown">

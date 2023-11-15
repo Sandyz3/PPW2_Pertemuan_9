@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginRegisterController;
 use App\Http\Controllers\web_controller;
 use App\Http\Controllers\CVController;
 use App\Http\Controllers\SendEmailController;
+use App\Http\Controllers\GalleryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +39,6 @@ Route::controller(LoginRegisterController::class)->group(function() {
     Route::post('/update/{id}', 'update')->name('update');
 });
 
-
 Route::controller(CVController::class)->group(function() {
     // Route::get('/admin_home', 'index')->name('admin.index');
     Route::get('/admin_posts', 'create')->name('admin.create');
@@ -49,6 +49,14 @@ Route::controller(CVController::class)->group(function() {
     Route::post('/admin_update/{id}','update')->name('admin.update');
 });
 
+Route::controller(GalleryController::class)->group(function() {
+    Route::get('/gallery', 'index')->name('gallery.index');
+    Route::get('/gallery/create', 'create')->name('gallery.create');
+    Route::post('/gallery/store', 'store')->name('gallery.store');
+    Route::get('/gallery/edit/{id}', 'edit')->name('gallery.edit');
+    Route::post('/gallery/update/{id}', 'update')->name('gallery.update');
+    Route::get('/destroy/{id}', 'destroy')->name('gallery.destroy');
+});
 
 Route::controller(web_controller::class)->group(function() {
     Route::get('/public_home', 'index')->name('public.index');
