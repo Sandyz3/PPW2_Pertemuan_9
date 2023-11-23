@@ -6,6 +6,7 @@ use App\Http\Controllers\web_controller;
 use App\Http\Controllers\CVController;
 use App\Http\Controllers\SendEmailController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\GreetController;
 
 /*
 |--------------------------------------------------------------------------
